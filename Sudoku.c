@@ -4,15 +4,16 @@
 //have numbers diferent from each other. Other rules are derived off of these ones
 //
 //terminology (refered in the file):
-//- Trivial cell: a cell where there is only one possible correct number e.j a cell whose row is already filled except for itself
-//- posible Entry /posible NUmber: a way to save the positions where a number can be placed given the actual state of the matrix
-// e.j. if we have a 3x3 submatrix where there is only two cells left (say the numbers 2 and 5 are not placed yet), then two
-//posible entries of each of those cells are 2 and 5. This numbers are saved in an associated matrix (struct -> posibleEntries)
-//- free number: when a cell has a unique posible entry of its ROW or COL or 3x3 SUBMATRIX. Implies that THAT cell number is the unique place where the number can be placed
-//- Ghost number: when inside a 3x3 submatrix, if there are 2 or 3 cells holding the unique posible entries of the submatrix, that means that
+//- Trivial cell: a cell where there is only one possible correct number -> e.g. a cell whose row is already filled except for itself
+//- posible Entry /posible Number: a way to save the positions where a number can be placed given the actual state of the sudoku
+// e.g. if we have a 3x3 submatrix where there is only two cells left (say the numbers 2 and 5 are not placed yet in the submatrix), then two
+//posible entries of each of those cells are 2 and 5. This numbers are saved in an associated array (struct -> posibleEntries)
+//- free number : when a cell has a unique posible entry of its 3x3 SUBMATRIX. Implies that THAT cell number is the unique place where the number can be placed
+//- Ghost number: when inside a 3x3 submatrix, if there are 2 or 3 cells in the same row or col holding the unique posible entries of the submatrix, that means that
 //the 3 cells act as if there was a number in that row or column (depending on the orientation). e.g Imagine a 3x3 submatrix with 2 cells in the same row 
 //that are not filled. In those 2 cells the number 3 is the only posible entry of all the submatrix. That means that, in that row, regardless of
-//where the 3 is placed, the 3 will be in the same row. Tat means that there cannot be another 3 in that same row. 
+//where the 3 is placed, the 3 will be in the same row. That means that there cannot be another 3 in that same row. In the file enlightening-drwaings.excalidraw, you have the second drawing
+//which explains it visually
 
 #include <stdio.h> //input - output
 #include <stdbool.h> //booleans
@@ -46,10 +47,9 @@ int main(){
 
     //setup the sudoku
 
-    printf("Fill the sudoku you want to solve: \n\n");
-    char temp = getchar();
+    printf("Fill the sudoku you want to solve (if you enter something strange the program won't work, I'm not a QA): \n\n");
 
-    int emptyCells = 9*9;
+    int emptyCells = 81;
 
     fillSudoku(sudoku, &emptyCells);
 
@@ -105,10 +105,9 @@ int main(){
                         
                         //check if there is any trivial cell (recall trivial cell from the first comment in this file)
                         if((sudoku[i][j].posibleEntriesLength == 1) && !sudoku[i][j].isFilled){
-                            
-                            printf("We found that cell (%d,%d) is %d!\n\n", i, j, sudoku[i][j].posibleEntries[0]);
-                            
-                            //as a consequence of how I ordered the posibleEntries array, this element must be in the first index
+
+                            //as a consequence of how I ordered the posibleEntries array, this number must be in the first index
+
                             sudoku[i][j].isFilled = true;
                             sudoku[i][j].number = sudoku[i][j].posibleEntries[0];
                             sudoku[i][j].posibleEntries[0] = 0;
@@ -119,30 +118,24 @@ int main(){
                 }
             }
             printSudoku(sudoku);
-            bool isComplete = true;
             
-            for(int i = 0; (i < 9) && isComplete; i++){
-                for(int j = 0; (j < 9) && isComplete; j++){
-                    if(!sudoku[i][j].isFilled){
-                        isComplete = false;
-                    }
-                }
-            }
-            if(isComplete){
-                printSudoku(sudoku);
+            if(emptyCells == 0){
                 solved = true;
             }
+
             lastRefresh = SDL_GetTicks();
         } else{
             currentTick = SDL_GetTicks();
         }
     }
+
     printf("This is your solved sudoku: \n\n");
     printSudoku(sudoku);
+
     return 0;
 }
 
-//used for developing the code (im lazy)
+//used for developing the code (i'm lazy)
 void autofill(Tcell sudoku[9][9], int *remainingEmptyCells, char temp){
     if(temp == 'a'){
     sudoku[0][0].number = 5;
@@ -627,8 +620,8 @@ void checkGhostNumber(Tcell sudoku[9][9], Tcell * currentCell, int currentCellRo
         for(int j = 0; (j < 9) && !isTargetInside; j+=3){
             for(int k = 0; k < 3; k++){
                 for(int t = 0; t < 3; t++){
-                    
                     //the for loops make it so that we are not checking the sudoku 1st row, change column, 2 row... Inside the englightening-drawings.excalidraw file, number 1 drawing lets you see visualy
+                    
                     if(((i+k) == currentCellRow) && ((j+t) == currentCellCol)){
                         isTargetInside = true;
                     }
